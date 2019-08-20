@@ -24,6 +24,8 @@
 ## Practicas
 + PRÁCTICA 1: ESTRUCTURA DE LA LINEA DE PROGRAMA
 
+## Documentación
+[Aquí](CPU12RM.pdf) se puede encontrar la documentación del procesador HC12 de Motorola
 ## Uso
 <p>Para la correcta ejecución del códgio fuente es necesario tener instalado alguna versión de Python. Este código se encuentra implementado para trabajar en versiones de python 2.x y 3.x</p>
 
