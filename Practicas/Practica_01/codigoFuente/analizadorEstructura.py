@@ -21,7 +21,7 @@ class AnalizadorInstruccion(Instruccion):
         self.tipo = 0
         self.simbolo = ""
         Instruccion.__init__(self)
-        a = len(instruccion)
+
         for indice in range(len(instruccion)):
             if self.tipo != 2:
                 if instruccion[indice] != " ":
