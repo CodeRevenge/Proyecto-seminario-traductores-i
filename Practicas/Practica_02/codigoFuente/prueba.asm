@@ -1,5 +1,3 @@
-estaEsUnaEtiqueta estaEsUnNemonico esteEsUnOperador ;esteEsUnComentario
- nem a,b
-tag nem2 ;comment
- nem3
- 
+a ABA 1
+ ADDD 3
+TAG ANDB 40, 15

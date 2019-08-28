@@ -5,7 +5,7 @@ from modoDireccionamiento import ModoDireccionamiento
 
 def main():
     direccionamiento = ModoDireccionamiento()
-    direccionamiento.recogerInstrucciones()
+    direccionamiento.modoDireccionamiento()
     if not direccionamiento.instrucciones:
         pass
 
