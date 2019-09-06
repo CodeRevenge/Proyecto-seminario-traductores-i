@@ -23,6 +23,8 @@
 
 ## Practicas
 + PRÁCTICA 1: ESTRUCTURA DE LA LINEA DE PROGRAMA
++ PRÁCTICA 2: MODO DE DIRECCIONAMIENTO
++ PRÁCTICA 3: DIRECTIVAS
 
 ## Documentación
 [Aquí](CPU12RM.pdf) se puede encontrar la documentación del procesador HC12 de Motorola
