@@ -4,11 +4,11 @@
 from tkinter import Tk
 from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
-from baseconvert import base
-from analizadorEstructura import AnalizadorInstruccion
+from src.analizadorEstructura import AnalizadorInstruccion
+from src.analizarDirectivas import Directiva
 import sys
 
-class Constantes:
+class Constantes(Directiva):
     def __init__(self):
         self.INDICE_NEMONICOS = 0
         self.INDICE_NUM_OPERADORES = 1
@@ -20,9 +20,7 @@ class Constantes:
         self.SEPARADOR_COMA = ","
 
         self.INDICADOR_INMEDIATO = "#"
-        self.INDICADOR_OCTAL = "@"
-        self.INDICADOR_HEXADECIMAL = "$"
-        self.INDICADOR_BINARIO = "%"
+        
 
         self.INDICE_ETIQUETA = 0
         self.INDICE_NEMONICO = 1
@@ -36,6 +34,8 @@ class Constantes:
         self.DIRECCIONAMIENTO_EXTENDIDO = "EXT"
         self.DIRECCIONAMIENTO_INDIZADO = "IDX"
         self.DIRECCIONAMIENTO_RELATIVO = "REL"
+
+        Directiva.__init__(self)
 
 class ModoDireccionamiento(Constantes):
     def __init__(self):
@@ -51,21 +51,46 @@ class ModoDireccionamiento(Constantes):
         if not self.listaNemonicos: return False
         self.recogerInstrucciones()
         if not self.instrucciones: return False
-        print('{:^10}'.format("Bytes") + "|" + '{:^30}'.format("Instrucción") + "|" + '{:^30}'.format("Tipo direccionamiento"))
+        # print('{:^10}'.format("Bytes") + "|" + '{:^30}'.format("Instrucción") + "|" + '{:^30}'.format("Tipo direccionamiento"))
         for instruccion in self.instrucciones:
+            if instruccion[0]:
+                self.validarEtiquetas(instruccion)
+                pass
             if self.validarDirectivas(instruccion):
-                print('{:^10}'.format("LI") + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" +'{:^30}'.format("Directiva")) 
+                if not self.analizarDirectiva(instruccion):
+                    return
+                # print('{:^10}'.format("LI") + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" +'{:^30}'.format("Directiva")) 
             else:
                 ocurrencias = self.ocurrenciasNemonicos(instruccion[self.INDICE_NEMONICO])
                 if ocurrencias:
                     nemonico = self.analizarOperadores(ocurrencias, instruccion[self.INDICE_OPERADORES])
-                    if not nemonico: 
-                        print('{:^10}'.format("-----") + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" + '{:^30}'.format("Es invalida"))
+                    if not nemonico[0]: 
+                        pass
+                        # print('{:^10}'.format("-----") + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" + '{:^30}'.format("Es invalida"))
+                        print("El mnemonico " + instruccion[1] + " no es valido con los operadores indicados")
+                        return False
                     else:
-                        print('{:^10}'.format(self.calcularBytes(nemonico[0])) + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" + '{:^30}'.format(nemonico[0][2]))
+                        self.guardarTabla(self.posicionHex(), self.convertirCodOp(nemonico[0][0], nemonico[1]))
+                        self.sumarPosicion(str(self.calcularBytes(nemonico[0][0])))
+                        self.escribirContLoc(self.posicionHex())
+                        self.escribirCodOp(self.convertirCodOp(nemonico[0][0], nemonico[1]))
+                        # print('{:^10}'.format(self.calcularBytes(nemonico[0])) + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" + '{:^30}'.format(nemonico[0][2]))
+                        '''Añadir a archivo'''
                 else:
-                    print("El mnemotecnico " + instruccion[1] + " no esta definido")
+                    print("El mnemotecnico " + instruccion[1] + " no esta definido")  
                     return False
+
+    def convertirCodOp(self, nemonico, instruccion):
+        cadena = ""
+        cadena = nemonico[3]
+
+        for tam in range(4,len(nemonico)):
+            if instruccion[0][0] == '#':
+                cadena += instruccion[0][1].zfill(int(nemonico[tam]))
+            else:
+                cadena += instruccion[tam-4].zfill(int(nemonico[tam]))
+        
+        return cadena
 
     def unirLista(self, lista, separador):
         cadena = ""
@@ -97,7 +122,7 @@ class ModoDireccionamiento(Constantes):
 
     # Función para leer los nemonicos del archivo nemonicos.nem
     def nemonicos(self):
-        direccion = "nemonicos.nem"
+        direccion = "src/nemonicos.nem"
         try:
             archivo = open(direccion, "r")
         except IOError:
@@ -106,10 +131,12 @@ class ModoDireccionamiento(Constantes):
             direccion = ""
             while not direccion:
                 if messagebox.askyesno(message="El archivo nemonicos.nem no existe en el directorio por default, ¿desea buscarlo en otro directorio?", title="No se encontro el archivo nemonicos.nem"):
-                    direccion = askopenfilename(initialdir="./", filetypes=[("NEM", "*.nem")])
+                    direccion = askopenfilename(initialdir="./src/", filetypes=[("NEM", "*.nem")])
                     if not direccion:
                         if not messagebox.askretrycancel(message="No se selecciono ningun archivo, ¿Desea reintentarlo?", title="No se selecciono archivo"):
                             return False
+                else:
+                    return
             self.listaNemonicos.clear()
             archivo = open(direccion, "r")
             for linea in archivo.readlines():
@@ -125,8 +152,9 @@ class ModoDireccionamiento(Constantes):
                     linea = linea.split(self.SEPARADOR_COMA)
                     self.listaNemonicos.append(linea)
 
+    # Función para leer las directivas del achivo directivas.dir
     def directivas(self):
-        direccion = "directivas.dir"
+        direccion = "src/directivas.dir"
         try:
             archivo = open(direccion, "r")
         except IOError:
@@ -135,10 +163,12 @@ class ModoDireccionamiento(Constantes):
             direccion = ""
             while not direccion:
                 if messagebox.askyesno(message="El archivo directivas.dir no existe en el directorio por default, ¿desea buscarlo en otro directorio?", title="No se encontro el archivo directivas.dir"):
-                    direccion = askopenfilename(initialdir="./", filetypes=[("DIR", "*.dir")])
+                    direccion = askopenfilename(initialdir="./src/", filetypes=[("DIR", "*.dir")])
                     if not direccion:
                         if not messagebox.askretrycancel(message="No se selecciono ningun archivo, ¿Desea reintentarlo?", title="No se selecciono archivo"):
                             return False
+                else:
+                    return
             self.listaDirectivas.clear()
             archivo = open(direccion, "r")
             for linea in archivo.readlines():
@@ -177,38 +207,7 @@ class ModoDireccionamiento(Constantes):
 
                 nemonico = self.verificarDireccionamiento(operadoresHex, filtro)
 
-                return nemonico
-
-                
-
-
-    def verificarBase(self, operador):
-        hexadecimal = ""
-        if operador[0] == self.INDICADOR_HEXADECIMAL:
-            try:
-                hexadecimal = base(operador.lstrip(self.INDICADOR_HEXADECIMAL).upper(), 16,16,string=True)
-            except ValueError:
-                # print("El operador " + operador + " no esta bien definido")
-                return False
-        elif operador[0] == self.INDICADOR_OCTAL:
-            try:
-                hexadecimal = base(operador.lstrip(self.INDICADOR_OCTAL).upper(), 8,16,string=True)
-            except ValueError:
-                # print("El operador " + operador + " no esta bien definido")
-                return False
-        elif operador[0] == self.INDICADOR_BINARIO:
-            try:
-                hexadecimal = base(operador.lstrip(self.INDICADOR_BINARIO).upper(), 2,16,string=True)
-            except ValueError:
-                # print("El operador " + operador + " no esta bien definido")
-                return False
-        else:
-            try:
-                hexadecimal = base(operador.upper(), 10,16,string=True)
-            except ValueError:
-                # print("El operador " + operador + " no esta bien definido")
-                return False
-        return hexadecimal
+                return nemonico, operadoresHex
 
     """Recibe una lista con los operadores convertidos en hexadecimal
         Además de las ocurrencias relacionadas con la cantidad de operadores
@@ -236,3 +235,7 @@ class ModoDireccionamiento(Constantes):
                 indice += 1
         
         return nemonico[0]
+
+    def validarEtiquetas(self, instruccion):
+        if instruccion[1] != self.EQU:
+            self.escribirTabSim(instruccion[0] + " " + self.posicionHex())
