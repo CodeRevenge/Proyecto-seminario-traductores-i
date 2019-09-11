@@ -3,9 +3,9 @@ from src.funcionalidades import Funcionalidad
 class ContadorLocalidades(Funcionalidad):
     def __init__(self):
         self.NOMBRE_ARCHIVO_CONT_LOC = "contloc.cl"
-        self.NOMBRE_ARCHIVO_TAB_SIM = "tabsim.lst"
-        self.NOMBRE_ARCHIVO_COD_OP = "codop.cop"
-        self.NOMBRE_TABLA = "tabla.tb"
+        self.NOMBRE_ARCHIVO_TAB_SIM = "TABSIM"
+        self.NOMBRE_ARCHIVO_COD_OP = "codop.hex"
+        self.NOMBRE_TABLA = "tabla.lst"
         self.SEPARADOR = '\n'
         self.SEPARADOR_COD_OP = " "
 

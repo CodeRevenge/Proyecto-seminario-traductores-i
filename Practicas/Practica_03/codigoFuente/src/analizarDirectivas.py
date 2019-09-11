@@ -51,7 +51,7 @@ class Directiva(ContadorLocalidades):
                 self.guardarTabla(self.posicionHex(), "")
                 nuevaDir = self.asignarPosicion(direccion)
                 if nuevaDir:
-                    self.guardarTabla(self.posicionHex(), "")
+                    # self.guardarTabla(self.posicionHex(), "")
                     self.escribirContLoc(nuevaDir)
                     return direccion
             else:
@@ -87,6 +87,7 @@ class Directiva(ContadorLocalidades):
         else:
             etiqueta = instruccion[0]
             posicion = instruccion[2][0]
+            posicion = self.verificarBase(posicion)
             self.escribirTabSim(etiqueta + " " + posicion)
             self.escribirContLoc(self.posicionHex())
             self.guardarTabla(self.posicionHex(), "")
@@ -113,7 +114,8 @@ class Directiva(ContadorLocalidades):
             return False
         else:
             cadena = ""
-            byte_ = instruccion[2][0].zfill(2)
+            byte_ = instruccion[2][0]
+            byte_ = self.verificarBase(byte_).zfill(2)
             veces = int(instruccion[2][1])
             cadena = byte_ * veces
 
@@ -164,7 +166,7 @@ class Directiva(ContadorLocalidades):
                     return False
                 else:
                     cadena += temp.zfill(4)
-                self.guardarTabla(self.posicionHex(), cadena)
+            self.guardarTabla(self.posicionHex(), cadena)
             nPos = self.sumarPosicion(str(len(cadena)), False)
             self.escribirCodOp(cadena)
             self.escribirContLoc(nPos)
