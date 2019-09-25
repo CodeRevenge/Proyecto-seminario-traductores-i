@@ -6,6 +6,7 @@ from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 from src.analizadorEstructura import AnalizadorInstruccion
 from src.analizarDirectivas import Directiva
+from src.relativos import Relativos
 import sys
 
 class Constantes(Directiva):
@@ -34,11 +35,12 @@ class Constantes(Directiva):
         self.DIRECCIONAMIENTO_EXTENDIDO = "EXT"
         self.DIRECCIONAMIENTO_INDIZADO = "IDX"
         self.DIRECCIONAMIENTO_RELATIVO = "REL"
-
         Directiva.__init__(self)
 
-class ModoDireccionamiento(Constantes):
+
+class ModoDireccionamiento(Constantes, Relativos):
     def __init__(self):
+        Relativos.__init__(self)
         Constantes.__init__(self)
 
         self.instrucciones = []
@@ -62,20 +64,25 @@ class ModoDireccionamiento(Constantes):
                 # print('{:^10}'.format("LI") + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" +'{:^30}'.format("Directiva")) 
             else:
                 ocurrencias = self.ocurrenciasNemonicos(instruccion[self.INDICE_NEMONICO])
+                
                 if ocurrencias:
-                    nemonico = self.analizarOperadores(ocurrencias, instruccion[self.INDICE_OPERADORES])
-                    if not nemonico[0]: 
-                        pass
-                        # print('{:^10}'.format("-----") + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" + '{:^30}'.format("Es invalida"))
-                        print("El mnemonico " + instruccion[1] + " no es valido con los operadores indicados")
-                        return False
+                    if self.esRelativo(ocurrencias[0]):
+                        self.sumarPosicion(str(self.calcularBytes(ocurrencias[0])))
+                        print(self.RELATIVO)
                     else:
-                        self.guardarTabla(self.posicionHex(), self.convertirCodOp(nemonico[0][0], nemonico[1]))
-                        self.sumarPosicion(str(self.calcularBytes(nemonico[0][0])))
-                        self.escribirContLoc(self.posicionHex())
-                        self.escribirCodOp(self.convertirCodOp(nemonico[0][0], nemonico[1]))
-                        # print('{:^10}'.format(self.calcularBytes(nemonico[0])) + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" + '{:^30}'.format(nemonico[0][2]))
-                        '''Añadir a archivo'''
+                        nemonico = self.analizarOperadores(ocurrencias, instruccion[self.INDICE_OPERADORES])
+                        if not nemonico[0]: 
+                            pass
+                            # print('{:^10}'.format("-----") + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" + '{:^30}'.format("Es invalida"))
+                            print("El mnemonico " + instruccion[1] + " no es valido con los operadores indicados")
+                            return False
+                        else:
+                            self.guardarTabla(self.posicionHex(), self.convertirCodOp(nemonico[0][0], nemonico[1]))
+                            self.sumarPosicion(str(self.calcularBytes(nemonico[0][0])))
+                            self.escribirContLoc(self.posicionHex())
+                            self.escribirCodOp(self.convertirCodOp(nemonico[0][0], nemonico[1]))
+                            # print('{:^10}'.format(self.calcularBytes(nemonico[0])) + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" + '{:^30}'.format(nemonico[0][2]))
+                            '''Añadir a archivo'''
                 else:
                     print("El mnemotecnico " + instruccion[1] + " no esta definido")  
                     return False

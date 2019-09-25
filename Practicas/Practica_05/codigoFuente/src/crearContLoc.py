@@ -7,13 +7,19 @@ class ContadorLocalidades(Funcionalidad):
         self.NOMBRE_ARCHIVO_COD_OP = "codop.hex"
         self.NOMBRE_TABLA = "tabla.lst"
         self.SEPARADOR = '\n'
-        self.SEPARADOR_COD_OP = " "
+        self.SEPARADOR_COD_OP = ' '
 
         self.contador = 0
 
+        self.listaCONTLOC = []
+        self.listaTABSIM = []
+        self.listaCODOP = []
+        self.listaTabla = []
+        
+
         self.crearArchivos()
 
-        Funcionalidad.__init__(self)
+        Funcionalidad.__init__(self)    
 
     def crearArchivos(self):
         archivo = open(self.NOMBRE_ARCHIVO_CONT_LOC,'w')
@@ -75,3 +81,20 @@ class ContadorLocalidades(Funcionalidad):
         for x in range(0,len(codop),2):
             nCodop += codop[x:x+2] + self.SEPARADOR_COD_OP
         return nCodop.rstrip()
+
+    def listarCodOp(self, codigoOp):
+        self.listaCODOP.append(codigoOp)
+        codop = open(self.NOMBRE_ARCHIVO_COD_OP, 'a')
+        nCodop = self.separarCodop(codigoOp)
+        codop.write(nCodop + self.SEPARADOR)
+        codop.close()
+
+    def listarContLoc(self, posicion):
+        contloc = open(self.NOMBRE_ARCHIVO_CONT_LOC, "a")
+        contloc.write(posicion + self.SEPARADOR)
+        contloc.close()
+
+    def listarTabSim(self, instruccion):
+        archivo = open(self.NOMBRE_ARCHIVO_TAB_SIM,"a")
+        archivo.write(instruccion + self.SEPARADOR)
+        archivo.close()
