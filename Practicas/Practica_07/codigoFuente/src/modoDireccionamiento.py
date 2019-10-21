@@ -283,46 +283,56 @@ class ModoDireccionamiento(Constantes, Relativos, Registros, Indexados):
             self.listarTabSim([instruccion[0], self.posicionHex()])
 
     def esEtiqueta(self, nemonico, operador):
-        a = operador == self.REGISTRO_A
-        b = operador == self.REGISTRO_B
-        d = operador == self.REGISTRO_D
-        x = operador == self.REGISTRO_X
-        y = operador == self.REGISTRO_Y
-        sp = operador == self.REGISTRO_SP
-        pc = operador == self.REGISTRO_PC
-        if a or b or d or x or y or sp or pc:
-            print('La etiqueta no puede ser un registro')
-            return [False]
-        elif self.letras(operador[0]):
-            return [True, nemonico[3] + ''.zfill(int(nemonico[4]))]
-        elif self.letras(operador[0]) == False:
-            if self.letras(operador[1]):
+        try:
+            int(operador)
+        except ValueError:
+            a = operador == self.REGISTRO_A
+            b = operador == self.REGISTRO_B
+            d = operador == self.REGISTRO_D
+            x = operador == self.REGISTRO_X
+            y = operador == self.REGISTRO_Y
+            sp = operador == self.REGISTRO_SP
+            pc = operador == self.REGISTRO_PC
+            if a or b or d or x or y or sp or pc:
+                print('La etiqueta no puede ser un registro')
+                return [False]
+            elif self.letras(operador[0]):
                 return [True, nemonico[3] + ''.zfill(int(nemonico[4]))]
+            elif self.letras(operador[0]) == False:
+                if self.letras(operador[1]):
+                    return [True, nemonico[3] + ''.zfill(int(nemonico[4]))]
+                else:
+                    return [False]
             else:
-                [False]
+                return [False]
         else:
             return [False]
         
     def esEtiquetaInd(self, operador):
-        a = operador == self.REGISTRO_A
-        b = operador == self.REGISTRO_B
-        d = operador == self.REGISTRO_D
-        x = operador == self.REGISTRO_X
-        y = operador == self.REGISTRO_Y
-        sp = operador == self.REGISTRO_SP
-        pc = operador == self.REGISTRO_PC
-        if a or b or d or x or y or sp or pc:
-            print('La etiqueta no puede ser un registro')
-            return False
-        elif self.letras(operador[0]):
-            return True
-        elif self.letras(operador[0]) == False:
-            if self.letras(operador[1]):
+        try:
+            int(operador)
+        except ValueError:
+            a = operador == self.REGISTRO_A
+            b = operador == self.REGISTRO_B
+            d = operador == self.REGISTRO_D
+            x = operador == self.REGISTRO_X
+            y = operador == self.REGISTRO_Y
+            sp = operador == self.REGISTRO_SP
+            pc = operador == self.REGISTRO_PC
+            if a or b or d or x or y or sp or pc:
+                print('La etiqueta no puede ser un registro')
+                return False
+            elif self.letras(operador[0]):
                 return True
+            elif self.letras(operador[0]) == False:
+                if self.letras(operador[1]):
+                    return True
+                else:
+                    False
             else:
-                False
+                return False
         else:
-            return False
+            return False     
  
     def letras(self, caracter):
         hex = caracter == self.INDICADOR_HEXADECIMAL
