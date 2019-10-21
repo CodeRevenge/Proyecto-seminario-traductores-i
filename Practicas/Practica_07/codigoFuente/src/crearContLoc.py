@@ -86,9 +86,11 @@ class ContadorLocalidades(Funcionalidad):
     def listarTabSim(self, instruccion):
         self.listaTABSIM.append(instruccion)
 
-    def listarTabla(self, localidad, codop, relativo = [], operador = []):
-        if relativo and operador:
+    def listarTabla(self, localidad, codop, relativo = [], operador = [], tipo = []):
+        if relativo and operador and not tipo:
             self.listaTabla.append([localidad, codop, relativo, operador])
+        elif tipo:
+            self.listaTabla.append([localidad, codop, relativo, operador, tipo])
         else:
             self.listaTabla.append([localidad, codop])
 

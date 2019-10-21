@@ -160,6 +160,12 @@ class Relativos(ContadorLocalidades):
         return a
 
     def existeIdentificador(self, operador):
+        hex = operador[0] == self.INDICADOR_HEXADECIMAL
+        bin = operador[0] == self.INDICADOR_BINARIO
+        oct = operador[0] == self.INDICADOR_OCTAL
+        inm = operador[0] == '#'
+        if hex or bin or oct or inm:
+            operador = operador[1:]
         for e in self.listaTABSIM:
             if operador == e[0]:
                 return [True,e]

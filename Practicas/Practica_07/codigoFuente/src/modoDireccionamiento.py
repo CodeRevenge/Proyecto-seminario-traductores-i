@@ -7,6 +7,8 @@ from tkinter.filedialog import askopenfilename
 from src.analizadorEstructura import AnalizadorInstruccion
 from src.analizarDirectivas import Directiva
 from src.relativos import Relativos
+from src.indexados import Indexados
+from src.registros import Registros
 import sys
 
 class Constantes(Directiva):
@@ -33,15 +35,17 @@ class Constantes(Directiva):
         self.DIRECCIONAMIENTO_INMEDIATO = "IMM"
         self.DIRECCIONAMIENTO_DIRECTO = "DIR"
         self.DIRECCIONAMIENTO_EXTENDIDO = "EXT"
-        self.DIRECCIONAMIENTO_INDIZADO = "IDX"
+        self.DIRECCIONAMIENTO_INDEXADO = "IDX"
         self.DIRECCIONAMIENTO_RELATIVO = "REL"
         Directiva.__init__(self)
 
 
-class ModoDireccionamiento(Constantes, Relativos):
+class ModoDireccionamiento(Constantes, Relativos, Registros, Indexados):
     def __init__(self):
         Relativos.__init__(self)
         Constantes.__init__(self)
+        Registros.__init__(self)
+        Indexados.__init__(self)
 
         self.instrucciones = []
         self.listaNemonicos = []
@@ -60,7 +64,7 @@ class ModoDireccionamiento(Constantes, Relativos):
                 pass
             if self.validarDirectivas(instruccion):
                 if not self.analizarDirectiva(instruccion):
-                    return
+                    return False
                 # print('{:^10}'.format("LI") + "|" + '{:<30}'.format(self.unirLista(instruccion, " ")) + "|" +'{:^30}'.format("Directiva")) 
             else:
                 ocurrencias = self.ocurrenciasNemonicos(instruccion[self.INDICE_NEMONICO])
@@ -85,6 +89,12 @@ class ModoDireccionamiento(Constantes, Relativos):
                                 print("El mnemonico {} esperaba dos operadores".format(ocurrencias[0][0]))
                         else:
                             pass
+                    elif self.esIndexado(instruccion[2]):
+                        a = self.analizarInstruccion(self, instruccion, ocurrencias)
+                        if a:
+                            self.listarTabla(a[0],a[1],a[2],a[3],a[4])
+                        else:
+                            return a
                     else:
                         etiq = self.esEtiqueta(ocurrencias[0], instruccion[2][0])
                         if etiq[0]:
@@ -213,6 +223,9 @@ class ModoDireccionamiento(Constantes, Relativos):
         ocurrencias = [valor for indice, valor in enumerate(self.listaNemonicos) if valor[self.INDICE_NEMONICOS] == nemonico]
         return False if not ocurrencias else ocurrencias
 
+    def esIndexado(self, operadores):
+        return True if len(operadores) > 1 else False
+
     def analizarOperadores(self, ocurrencias, operadores):
         filtro = [valor for indice, valor in enumerate(ocurrencias) if int(valor[self.INDICE_NUM_OPERADORES]) == len(operadores)]
         if not filtro:
@@ -270,12 +283,54 @@ class ModoDireccionamiento(Constantes, Relativos):
             self.listarTabSim([instruccion[0], self.posicionHex()])
 
     def esEtiqueta(self, nemonico, operador):
-        if self.letras(operador[0]):
+        a = operador == self.REGISTRO_A
+        b = operador == self.REGISTRO_B
+        d = operador == self.REGISTRO_D
+        x = operador == self.REGISTRO_X
+        y = operador == self.REGISTRO_Y
+        sp = operador == self.REGISTRO_SP
+        pc = operador == self.REGISTRO_PC
+        if a or b or d or x or y or sp or pc:
+            print('La etiqueta no puede ser un registro')
+            return [False]
+        elif self.letras(operador[0]):
             return [True, nemonico[3] + ''.zfill(int(nemonico[4]))]
+        elif self.letras(operador[0]) == False:
+            if self.letras(operador[1]):
+                return [True, nemonico[3] + ''.zfill(int(nemonico[4]))]
+            else:
+                [False]
         else:
             return [False]
+        
+    def esEtiquetaInd(self, operador):
+        a = operador == self.REGISTRO_A
+        b = operador == self.REGISTRO_B
+        d = operador == self.REGISTRO_D
+        x = operador == self.REGISTRO_X
+        y = operador == self.REGISTRO_Y
+        sp = operador == self.REGISTRO_SP
+        pc = operador == self.REGISTRO_PC
+        if a or b or d or x or y or sp or pc:
+            print('La etiqueta no puede ser un registro')
+            return False
+        elif self.letras(operador[0]):
+            return True
+        elif self.letras(operador[0]) == False:
+            if self.letras(operador[1]):
+                return True
+            else:
+                False
+        else:
+            return False
  
     def letras(self, caracter):
+        hex = caracter == self.INDICADOR_HEXADECIMAL
+        bin = caracter == self.INDICADOR_BINARIO
+        oct = caracter == self.INDICADOR_OCTAL
+        inm = caracter == self.INDICADOR_INMEDIATO
+        if hex or bin or oct or inm:
+            return False
         car = ord(caracter)
         if (car == 95) or (car >= 65 and car <= 90) or (car >=97 and car <= 122):
             return True
@@ -298,6 +353,9 @@ class ModoDireccionamiento(Constantes, Relativos):
                 else:
                     listaCodOp[index][1] = self.verificarRelativos_9(instruccion)
                     listaCodOp[index] = listaCodOp[index][0:2]
+            elif len(instruccion) == 5:
+                listaCodOp[index][1] = self.verificarIndexados(self, instruccion)
+                listaCodOp[index] = listaCodOp[index][0:2]
             elif len(instruccion) > 2:
                 listaCodOp[index][1] = self.asignarEtiquetas(instruccion)
                 listaCodOp[index] = listaCodOp[index][0:2]
@@ -305,6 +363,6 @@ class ModoDireccionamiento(Constantes, Relativos):
     def asignarEtiquetas(self, instruccion):
         a = self.existeIdentificador(instruccion[3][2][0])
         if a[0]:
-            return instruccion[1][:len(instruccion[1])-int(instruccion[2][4])]
+            return instruccion[1][:len(instruccion[1])-int(instruccion[2][4])] + a[1][1].zfill(int(instruccion[2][4]))
         else:
             print("No existe el identificador {}".format(instruccion[3][2][0]))

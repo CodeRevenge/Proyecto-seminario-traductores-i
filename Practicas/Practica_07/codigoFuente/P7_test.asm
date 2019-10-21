@@ -1,0 +1,3 @@
+ ORG $4000
+E1 EQU 256 
+ LDAA E1,Y

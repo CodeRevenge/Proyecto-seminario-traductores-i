@@ -61,6 +61,8 @@ class AnalizadorInstruccion(Instruccion):
         self.nemonico = self.simbolo
     
     def asignarOperadores(self):
+        if self.simbolo.startswith(','):
+            self.simbolo = '0' + self.simbolo   
         oper = self.simbolo.split(",")
         for x in range(len(oper)):
             a = oper[x].strip()
