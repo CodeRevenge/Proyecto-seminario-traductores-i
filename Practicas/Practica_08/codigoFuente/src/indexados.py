@@ -22,6 +22,8 @@ class Indexados(Funcionalidad):
         self.IDX = 'IDX'
         self.IDX_1 = 'IDX1'
         self.IDX_2 = 'IDX2'
+        self.D_IDX = 'D_IDX'
+        self.E_IDX2 = 'E_IDX2'
 
         self.MAX_5_B = 15
         self.MIN_5_B = -16
@@ -34,43 +36,63 @@ class Indexados(Funcionalidad):
         operadores = instruccion[2]
         codOp = ocurrencias[-1][3]
 
-        if operadores[1].startswith('+') or operadores[1].startswith('-') or operadores[1].endswith('+') or operadores[1].endswith('-'):
-            pass
+        if len(operadores) > 2:
+            print('Error: Se recibieron más de dos operadores. {}'.format(instruccion))
+            return False
         else:
-            if self.verificarRegistro(obj, operadores[1]):
-                if self.verificarRegistroAcc(obj, operadores[0]):
+            if operadores[0].startswith('[') and operadores[1].endswith(']'):
+                if operadores[0].endswith('D') and len(operadores[0]) == 2:
                     pass
                 else:
-                    # if obj.esLetra(operadores[0]):
-                    #     pass
-                    # else:
-                    size = self.determinarTamaño(obj, operadores[0])
-                    if size == 16:
-                        nem = [valor for indice, valor in enumerate(ocurrencias) if valor[2] == self.IDX_2]
+                    n = operadores[0][1:]
+                    size = self.determinarTamaño(obj, n)
+                    if size <= 16:
+                        nem = [valor for indice, valor in enumerate(ocurrencias) if valor[2] == self.E_IDX2]
                         nem = nem[0]
+                        codOp = nem[3]
                         codOp = codOp + ''.zfill(int(nem[4]))
                         posAct = obj.posicionHex()
                         obj.sumarPosicion(len(codOp), tipo=False)
-                        return [posAct, codOp, nem, instruccion, self.IDX_2]
-                    elif size == 9:
-                        nem = [valor for indice, valor in enumerate(ocurrencias) if valor[2] == self.IDX_1]
-                        nem = nem[0]
-                        codOp = codOp + ''.zfill(int(nem[4]))
-                        posAct = obj.posicionHex()
-                        obj.sumarPosicion(len(codOp), tipo=False)
-                        return [posAct, codOp, nem, instruccion, self.IDX_1]
-                    elif size == 5:
-                        nem = [valor for indice, valor in enumerate(ocurrencias) if valor[2] == self.IDX]
-                        nem = nem[0]
-                        codOp = codOp + ''.zfill(int(nem[4]))
-                        posAct = obj.posicionHex()
-                        obj.sumarPosicion(len(codOp), tipo=False)
-                        return [posAct, codOp, nem, instruccion, self.IDX]
+                        return [posAct, codOp, nem, instruccion, self.E_IDX2]
                     else:
-                        return False
-
+                        print('Error: El operador esta fuera de rango. {}'.format(instruccion))
+            elif operadores[1].startswith('+') or operadores[1].startswith('-') or operadores[1].endswith('+') or operadores[1].endswith('-'):
+                pass
             else:
-                print('Error: Se esperaba un nombre de registro y se recibio {}'.format(operadores[1]))
+                if self.verificarRegistro(obj, operadores[1]):
+                    if self.verificarRegistroAcc(obj, operadores[0]):
+                        pass
+                    else:
+                        # if obj.esLetra(operadores[0]):
+                        #     pass
+                        # else:
+                        size = self.determinarTamaño(obj, operadores[0])
+                        if size == 16:
+                            nem = [valor for indice, valor in enumerate(ocurrencias) if valor[2] == self.IDX_2]
+                            nem = nem[0]
+                            codOp = codOp + ''.zfill(int(nem[4]))
+                            posAct = obj.posicionHex()
+                            obj.sumarPosicion(len(codOp), tipo=False)
+                            return [posAct, codOp, nem, instruccion, self.IDX_2]
+                        elif size == 9:
+                            nem = [valor for indice, valor in enumerate(ocurrencias) if valor[2] == self.IDX_1]
+                            nem = nem[0]
+                            codOp = codOp + ''.zfill(int(nem[4]))
+                            posAct = obj.posicionHex()
+                            obj.sumarPosicion(len(codOp), tipo=False)
+                            return [posAct, codOp, nem, instruccion, self.IDX_1]
+                        elif size == 5:
+                            nem = [valor for indice, valor in enumerate(ocurrencias) if valor[2] == self.IDX]
+                            nem = nem[0]
+                            codOp = codOp + ''.zfill(int(nem[4]))
+                            posAct = obj.posicionHex()
+                            obj.sumarPosicion(len(codOp), tipo=False)
+                            return [posAct, codOp, nem, instruccion, self.IDX]
+                        else:
+                            return False
+
+                else:
+                    print('Error: Se esperaba un nombre de registro y se recibio {}'.format(operadores[1]))
 
     def verificarRegistro(self, obj, operador):
         x = operador == obj.REGISTRO_X
@@ -88,6 +110,7 @@ class Indexados(Funcionalidad):
 
         if a or b or d:
             return True
+    
 
     def determinarTamaño(self, obj, operador):
         if obj.esEtiquetaInd(operador):
@@ -118,12 +141,16 @@ class Indexados(Funcionalidad):
             return self.R_SP
         elif registro == self.REGISTRO_PC:
             return self.R_PC
+        else:
+            print('Error: El registro no es valodo. {}'.format(registro))
+            return False
 
     def verificarIndexados(self, obj, instruccion):
         switch = {
             'IDX':self.funcion01,
             'IDX1':self.funcion02,
             'IDX2':self.funcion02,
+            'E_IDX2':self.funcion3,
         }
 
         return switch.get(instruccion[4],self.default)(obj, instruccion)
@@ -134,6 +161,8 @@ class Indexados(Funcionalidad):
         num = int(self.verificarBaseFull(instruccion[3][2][0]))
 
         rr = self.obtenerCodRegistro(instruccion[3][2][1])
+        if not rr:
+            return False
 
         if num >= 0:
             n = '0'
@@ -151,6 +180,8 @@ class Indexados(Funcionalidad):
             codop = instruccion[1][:2]
             num = int(self.verificarBaseFull(instruccion[3][2][0]))
             rr = self.obtenerCodRegistro(instruccion[3][2][1])
+            if not rr:
+                return False
             z = '0'
             if num >= 0:
                 s = '0'
@@ -167,6 +198,8 @@ class Indexados(Funcionalidad):
             else:
                 num = int(self.verificarBaseFull(instruccion[3][2][0]))
             rr = self.obtenerCodRegistro(instruccion[3][2][1])
+            if not rr:
+                return False
             z = '1'
             if num >= 0:
                 s = '0'
@@ -177,6 +210,28 @@ class Indexados(Funcionalidad):
 
 
         return codop + base('111' + rr + '0' + z + s + offset,2,16,string=True).zfill(int(instruccion[2][4]))
+
+    def funcion3(self, obj, instruccion):
+        codop = instruccion[1][:2]
+        a = obj.existeIdentificador(instruccion[3][2][0][1:])
+        if a[0]:
+            idNum = a[1][1]
+            num = self.verificarBaseFull(idNum)
+        else:
+            num = self.verificarBaseFull(instruccion[3][2][0][1:])
+
+        rr = self.obtenerCodRegistro(instruccion[3][2][1][:-1])
+        if not rr:
+            return False
+
+
+        if type(num) == int:
+            n = Bits(int=num, length=16).bin[4:]
+        else:
+            n = Bits(hex=num).bin
+
+        return codop + base('111' + rr + '011',2,16,string=True) + base(n,2,16,string=True).zfill(4)
+    
 
     def default(self):
         print('No existe este tipo de indexado')

@@ -56,7 +56,10 @@ class Funcionalidad:
                 # print("El operador " + operador + " no esta bien definido")
                 return False
         else:
-            return int(operador)
+            try:
+                return int(operador)
+            except ValueError:
+                return operador
         return hexadecimal
 
     def dec2Hex(self, convertir):
