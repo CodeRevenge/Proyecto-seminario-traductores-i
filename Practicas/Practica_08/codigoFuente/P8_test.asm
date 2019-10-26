@@ -1,3 +1,2 @@
  ORG $4000
-E1 EQU %1010
- LDAA [E1,Y]
+ LDAA [D,Y]

@@ -42,7 +42,13 @@ class Indexados(Funcionalidad):
         else:
             if operadores[0].startswith('[') and operadores[1].endswith(']'):
                 if operadores[0].endswith('D') and len(operadores[0]) == 2:
-                    pass
+                    nem = [valor for indice, valor in enumerate(ocurrencias) if valor[2] == self.D_IDX]
+                    nem = nem[0]
+                    codOp = nem[3]
+                    codOp = codOp + ''.zfill(int(nem[4]))
+                    posAct = obj.posicionHex()
+                    obj.sumarPosicion(len(codOp), tipo=False)
+                    return [posAct, codOp, nem, instruccion, self.D_IDX]
                 else:
                     n = operadores[0][1:]
                     size = self.determinarTamaño(obj, n)
@@ -150,7 +156,8 @@ class Indexados(Funcionalidad):
             'IDX':self.funcion01,
             'IDX1':self.funcion02,
             'IDX2':self.funcion02,
-            'E_IDX2':self.funcion3,
+            'E_IDX2':self.funcion03,
+            'D_IDX':self.funcion06,
         }
 
         return switch.get(instruccion[4],self.default)(obj, instruccion)
@@ -211,7 +218,7 @@ class Indexados(Funcionalidad):
 
         return codop + base('111' + rr + '0' + z + s + offset,2,16,string=True).zfill(int(instruccion[2][4]))
 
-    def funcion3(self, obj, instruccion):
+    def funcion03(self, obj, instruccion):
         codop = instruccion[1][:2]
         a = obj.existeIdentificador(instruccion[3][2][0][1:])
         if a[0]:
@@ -232,6 +239,21 @@ class Indexados(Funcionalidad):
 
         return codop + base('111' + rr + '011',2,16,string=True) + base(n,2,16,string=True).zfill(4)
     
+    def funcion04(self, obj, instruccion):
+        pass
+
+    def funcion05(self, obj, instruccion):
+        pass
+    
+    def funcion06(self, obj, instruccion):
+        codop = instruccion[1][:2]
+
+        rr = self.obtenerCodRegistro(instruccion[3][2][1][:-1])
+        if not rr:
+            return False
+
+        return codop + base('111' + rr + '111',2,16,string=True)
+
 
     def default(self):
         print('No existe este tipo de indexado')
