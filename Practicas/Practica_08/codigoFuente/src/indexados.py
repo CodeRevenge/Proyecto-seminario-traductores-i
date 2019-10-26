@@ -24,6 +24,8 @@ class Indexados(Funcionalidad):
         self.IDX_2 = 'IDX2'
         self.D_IDX = 'D_IDX'
         self.E_IDX2 = 'E_IDX2'
+        self.F_4 = 'F_4'
+        self.F_5 = 'F_5'
 
         self.MAX_5_B = 15
         self.MIN_5_B = -16
@@ -63,15 +65,28 @@ class Indexados(Funcionalidad):
                     else:
                         print('Error: El operador esta fuera de rango. {}'.format(instruccion))
             elif operadores[1].startswith('+') or operadores[1].startswith('-') or operadores[1].endswith('+') or operadores[1].endswith('-'):
-                pass
+                size = (int(operadores[0]) > 0 and int(operadores[0]) <= 8)
+                if size:
+                    nem = [valor for indice, valor in enumerate(ocurrencias) if valor[2] == self.IDX]
+                    nem = nem[0]
+                    codOp = nem[3]
+                    codOp = codOp + ''.zfill(2)
+                    posAct = obj.posicionHex()
+                    obj.sumarPosicion(len(codOp), tipo=False)
+                    return [posAct, codOp, nem, instruccion, self.F_4]
+                else:
+                    print('Error: El operador esta fuera de rango. {}'.format(instruccion))
             else:
                 if self.verificarRegistro(obj, operadores[1]):
                     if self.verificarRegistroAcc(obj, operadores[0]):
-                        pass
+                        nem = [valor for indice, valor in enumerate(ocurrencias) if valor[2] == self.IDX]
+                        nem = nem[0]
+                        codOp = nem[3]
+                        codOp = codOp + ''.zfill(2)
+                        posAct = obj.posicionHex()
+                        obj.sumarPosicion(len(codOp), tipo=False)
+                        return [posAct, codOp, nem, instruccion, self.F_5]
                     else:
-                        # if obj.esLetra(operadores[0]):
-                        #     pass
-                        # else:
                         size = self.determinarTamaño(obj, operadores[0])
                         if size == 16:
                             nem = [valor for indice, valor in enumerate(ocurrencias) if valor[2] == self.IDX_2]
@@ -148,7 +163,7 @@ class Indexados(Funcionalidad):
         elif registro == self.REGISTRO_PC:
             return self.R_PC
         else:
-            print('Error: El registro no es valodo. {}'.format(registro))
+            print('Error: El registro no es valido. {}'.format(registro))
             return False
 
     def verificarIndexados(self, obj, instruccion):
@@ -157,6 +172,8 @@ class Indexados(Funcionalidad):
             'IDX1':self.funcion02,
             'IDX2':self.funcion02,
             'E_IDX2':self.funcion03,
+            'F_4':self.funcion04,
+            'F_5':self.funcion05,
             'D_IDX':self.funcion06,
         }
 
@@ -240,10 +257,57 @@ class Indexados(Funcionalidad):
         return codop + base('111' + rr + '011',2,16,string=True) + base(n,2,16,string=True).zfill(4)
     
     def funcion04(self, obj, instruccion):
-        pass
+        codop = instruccion[1][:2]
+
+        a = obj.existeIdentificador(instruccion[3][2][0])
+        if a[0]:
+            idNum = a[1][1]
+            num = self.verificarBaseFull(idNum)
+        else:
+            num = self.verificarBaseFull(instruccion[3][2][0])
+        
+        if instruccion[3][2][1].startswith('+') or instruccion[3][2][1].startswith('-'):
+            if instruccion[3][2][1][1:] == self.REGISTRO_PC:
+                print('Error: No es valido el registro PC para esta instrucción. {}'.format(instruccion))
+                return False
+            rr = self.obtenerCodRegistro(instruccion[3][2][1][1:])
+            if not rr:
+                return False
+            p = '0'
+        elif instruccion[3][2][1].endswith('+') or instruccion[3][2][1].endswith('-'):
+            if instruccion[3][2][1][:-1] == self.REGISTRO_PC:
+                print('Error: No es valido el registro PC para esta instrucción. {}'.format(instruccion))
+                return False
+            rr = self.obtenerCodRegistro(instruccion[3][2][1][:-1])
+            if not rr:
+                return False
+            p = '1'
+
+        if instruccion[3][2][1].startswith('+') or instruccion[3][2][1].endswith('+'):
+            nnnn = Bits(int=int(num)-1, length=8).bin[4:]
+        elif instruccion[3][2][1].startswith('-') or instruccion[3][2][1].endswith('-'):
+            nnnn = Bits(int=-int(num), length=8).bin[4:]
+
+        return codop + base(rr + '1' + p + nnnn,2,16,string=True)
 
     def funcion05(self, obj, instruccion):
-        pass
+        codop = instruccion[1][:2]
+
+        if instruccion[3][2][0] == self.REGISTRO_A:
+            aa = '00'
+        elif instruccion[3][2][0] == self.REGISTRO_B:
+            aa = '01'
+        elif instruccion[3][2][0] == self.REGISTRO_D:
+            aa = '10'
+        else:
+            print('Error: El acumulador no existe. {}'.format(instruccion))
+            return False
+
+        rr = self.obtenerCodRegistro(instruccion[3][2][1])
+
+        return codop + base('111' + rr + '1' + aa,2,16,string=True)
+
+
     
     def funcion06(self, obj, instruccion):
         codop = instruccion[1][:2]

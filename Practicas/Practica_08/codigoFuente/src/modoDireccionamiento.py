@@ -365,7 +365,10 @@ class ModoDireccionamiento(Constantes, Relativos, Registros, Indexados):
                     listaCodOp[index] = listaCodOp[index][0:2]
             elif len(instruccion) == 5:
                 listaCodOp[index][1] = self.verificarIndexados(self, instruccion)
-                listaCodOp[index] = listaCodOp[index][0:2]
+                if not listaCodOp[index][1]:
+                    pass
+                else:
+                    listaCodOp[index] = listaCodOp[index][0:2]
             elif len(instruccion) > 2:
                 listaCodOp[index][1] = self.asignarEtiquetas(instruccion)
                 listaCodOp[index] = listaCodOp[index][0:2]

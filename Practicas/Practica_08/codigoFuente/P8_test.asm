@@ -1,2 +1,14 @@
  ORG $4000
- LDAA [D,Y]
+ LDAA ,Y
+ LDAA -1,Y
+ LDAA 1,Y
+ LDAA 1, -Y
+ LDAA 1,Y-
+ LDAA 1,+Y
+ LDAA 1,Y+
+ LDAA [1,Y]
+ LDAA 16,Y
+ LDAA 256,Y
+ LDAA 7, +Y
+ LDAA 7, Y+
+ LDAA A,Y

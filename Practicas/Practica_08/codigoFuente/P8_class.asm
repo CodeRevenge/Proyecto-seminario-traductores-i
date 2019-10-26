@@ -7,5 +7,5 @@
  LDAA 16,Y
  LDAA [16,Y]
  LDAA 5, -Y
- LDAA 5, Y-
+ LDAA 5, Y+
  END
