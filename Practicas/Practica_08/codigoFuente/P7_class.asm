@@ -1,0 +1,11 @@
+ ORG $4000
+ LDAA #5
+ LDAA 5
+ LDAA 5,Y
+ LDAA -5,Y
+ LDAA -16,Y
+ LDAA 16,Y
+ LDAA [16,Y]
+ LDAA 5, -Y
+ LDAA 5, Y-
+ END
